@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Departmental Racing Registry — Name Filing</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --paper: #ece3c8;
+    --paper-dark: #ddd0a8;
+    --ink: #25304a;
+    --ink-soft: #4a5573;
+    --stamp: #a3372b;
+    --stamp-soft: #c9897f;
+    --teal: #3c6e64;
+    --line: rgba(37,48,74,0.22);
+    --card: #f5efdb;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background:
+      repeating-linear-gradient(0deg, rgba(37,48,74,0.035) 0px, rgba(37,48,74,0.035) 1px, transparent 1px, transparent 28px),
+      var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height:100vh;
+    padding: 18px 14px 60px;
+  }
+
+  .sheet{
+    max-width: 1400px;
+    margin: 0 auto;
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+  }
+
+  .panel{
+    border:1.5px solid var(--ink);
+    background:var(--card);
+    box-shadow:5px 5px 0 var(--paper-dark),6px 6px 0 var(--line);
+  }
+
+  .left-panel{
+    flex:1;
+    min-width:700px;
+  }
+
+  .right-panel{
+    width:360px;
+    display:flex;
+    flex-direction:column;
+    height:calc(100vh - 40px);
+  }
+
+  .saved-scroll{
+    overflow-y:auto;
+    overflow-x:hidden;
+    flex:1;
+    padding:0 20px 20px;
+  }
+
+  .saved-scroll::-webkit-scrollbar{
+    width:10px;
+  }
+
+  .saved-scroll::-webkit-scrollbar-thumb{
+    background:rgba(37,48,74,.25);
+  }
+
+  header{
+    padding: 18px 20px 14px;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+  }
+
+  .eyebrow{
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    display:flex;
+    justify-content: space-between;
+  }
+
+  h1{
+    font-family: 'Special Elite', monospace;
+    font-size: 22px;
+    margin: 8px 0 4px;
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+  }
+
+  .subhead{
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .stamp-corner{
+    position:absolute;
+    top: 16px;
+    right: 18px;
+    border: 2px solid var(--stamp);
+    color: var(--stamp);
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    padding: 4px 7px;
+    transform: rotate(6deg);
+    letter-spacing: 0.08em;
+    opacity: 0.8;
+  }
+
+  .controls{
+    padding: 16px 20px;
+    border-bottom: 2px dashed var(--line);
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+
+  select{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 9px 10px;
+    flex: 1 1 160px;
+  }
+
+  button{
+    font-family: 'Special Elite', monospace;
+    cursor: pointer;
+    border: none;
+  }
+
+  .stamp-btn{
+    flex: 1 1 200px;
+    background: var(--stamp);
+    color: var(--card);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    padding: 11px 14px;
+    border: 1.5px solid var(--ink);
+    transition: transform 0.08s ease;
+  }
+  .stamp-btn:active{ transform: scale(0.97) rotate(-1deg); }
+
+  .fields{ padding: 4px 0; }
+
+  .field{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 11px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .field:last-child{ border-bottom: none; }
+
+  .field-num{
+    font-size: 10px;
+    color: var(--ink-soft);
+    width: 38px;
+    flex-shrink:0;
+    letter-spacing: 0.05em;
+  }
+
+  .field-name{
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .field-count{
+    font-size: 10px;
+    color: var(--ink-soft);
+    flex-shrink:0;
+    min-width: 36px;
+    text-align:right;
+  }
+
+  .icon-btn{
+    background: none;
+    font-size: 16px;
+    padding: 4px 6px;
+    color: var(--ink-soft);
+    flex-shrink:0;
+  }
+  .icon-btn.saved{ color: var(--stamp); }
+  .icon-btn:hover{ color: var(--ink); }
+
+  .empty-state{
+    padding: 30px 20px;
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  .shortlist-section{
+    border-top: 2px solid var(--ink);
+    padding: 16px 20px 20px;
+  }
+
+  .shortlist-section h2{
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    margin: 0 0 10px;
+    color: var(--teal);
+  }
+
+  .short-item{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--line);
+    font-size: 14px;
+  }
+  .short-item:last-child{ border-bottom: none; }
+
+  .short-meta{
+    font-size: 10px;
+    color: var(--ink-soft);
+  }
+
+  .remove-btn{
+    background:none;
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .remove-btn:hover{ color: var(--stamp); }
+
+  footer.note{
+    padding: 12px 20px 4px;
+    font-size: 10px;
+    color: var(--ink-soft);
+    text-align:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .stamp-btn{ transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="panel left-panel">
+    <header>
+      <div class="eyebrow"><span>FORM 12-B</span><span id="dateField"></span></div>
+      <h1>Departmental Racing Registry</h1>
+      <div class="subhead">Racer Name Filing — max 21 characters, no live or deceased persons or horses</div>
+      <div class="stamp-corner">FOR REVIEW</div>
+    </header>
+
+    <div class="controls">
+      <select id="patternSelect">
+        <option value="any">Any length / form</option>
+        <option value="single">Single word only</option>
+        <option value="short">Short phrase (2 words)</option>
+        <option value="long">Long phrase (title + words)</option>
+      </select>
+      <button class="stamp-btn" id="generateBtn">GENERATE 10</button>
+    </div>
+
+    <div class="fields" id="fieldsContainer">
+      <div class="empty-state">No names filed yet. Press generate to begin.</div>
+    </div>
+
+    <footer class="note" id="storageNotice">Checking shortlist storage…</footer>
+  </div>
+
+  <div class="panel right-panel">
+    <header>
+      <h1>Saved Filings</h1>
+      <div class="subhead">
+        Stored locally in your browser
+      </div>
+
+    </header>
+    <div class="saved-scroll">
+      <div id="shortlistContainer"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const MAX_LEN = 21;
+
+const BANNED = ["rat","mouse","mice","rodent","vermin","vole","gnaw","hamster","gerbil","varmint","squirrel","chipmunk","weasel","muskrat"];
+
+const TITLES = ["Sir","Dame","Lord","Lady","Captain","Doctor","Reverend","Professor","Baron","Countess","Saint","General","Madame","Duke of","Duchess of","His Excellency","The Honorable"];
+
+const ADJ = ["Wobbly","Catastrophic","Lukewarm","Inexplicable","Mandatory","Reluctant","Glorious","Soggy","Unforeseen","Perpetual","Drowsy","Volatile","Negligible","Triumphant","Questionable","Ominous","Damp","Excessive","Untimely","Unsolicited","Improbable","Vexing","Lavish","Crumbling","Feral","Wistful","Stale","Inflated","Overdue","Hasty","Belated","Suspicious","Radiant","Begrudging"];
+
+const NOUN = ["Thursday","Paperwork","Doom","Chaos","Leftovers","Nonsense","Static","Drizzle","Overtime","Stapler","Margarine","Eclipse","Avalanche","Pudding","Thunder","Loophole","Casserole","Velocity","Mildew","Echo","Sediment","Banister","Apocalypse","Lagoon","Mortgage","Sundial","Confetti","Embargo","Hailstorm","Vortex","Pancake","Mausoleum","Crumpet","Glitter","Cardigan","Thermostat","Horizon","Tundra","Carnival","Anchovy","Bagpipe","Compost"];
+
+const CONNECT = ["of","the","vs.","and","&","minus"];
+
+const PREFIX = ["Wob","Cata","Mando","Glor","Pip","Thun","Sploo","Quib","Zan","Fon","Crum","Sner","Plun","Grom","Wist","Blun","Driz","Hush","Clat","Smol","Vex","Brom"];
+const SUFFIX = ["sworth","clysm","ification","atorium","ington","ble","ous","icle","ander","iddle","umption","asaurus","elope","iform","oggle","endous","ipity","orium","ackle","onomy"];
+
+function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function isClean(name){
+  const lower = name.toLowerCase();
+  return !BANNED.some(b => lower.includes(b));
+}
+
+function buildSingle(){
+  const w = rand(PREFIX) + rand(SUFFIX).toLowerCase();
+  return w.charAt(0).toUpperCase() + w.slice(1);
+}
+
+function buildShort(){
+  const patterns = [
+    () => `${rand(ADJ)} ${rand(NOUN)}`,
+    () => {
+      const t = rand(TITLES);
+      return t.endsWith("of") ? `${t} ${rand(NOUN)}` : `${t} ${rand(NOUN)}`;
+    },
+    () => `${rand(NOUN)} ${rand(CONNECT)} ${rand(NOUN)}`
+  ];
+  return rand(patterns)();
+}
+
+function buildLong(){
+  const t = rand(TITLES);
+  return `${t} ${rand(ADJ)} ${rand(NOUN)}`;
+}
+
+function generateOne(mode){
+  let tries = 0;
+  let builders;
+  if(mode === "single") builders = [buildSingle];
+  else if(mode === "short") builders = [buildShort];
+  else if(mode === "long") builders = [buildLong];
+  else builders = [buildSingle, buildShort, buildShort, buildLong];
+
+  while(tries < 25){
+    const name = rand(builders)();
+    if(name.length <= MAX_LEN && isClean(name)){
+      return name;
+    }
+    tries++;
+  }
+  // fallback: always-safe single word
+  let fallback = buildSingle();
+  let safety = 0;
+  while(fallback.length > MAX_LEN && safety < 10){ fallback = buildSingle(); safety++; }
+  return fallback;
+}
+
+let currentBatch = [];
+let shortlist = [];
+let storageAvailable = false;
+
+function updateStorageNotice(){
+
+    document.getElementById("storageNotice").textContent =
+        storageAvailable
+            ? "Saved names are stored in this browser."
+            : "Local storage is unavailable.";
+}
+
+function loadShortlist(){
+    try{
+        const data = localStorage.getItem("shortlist");
+        shortlist = data ? JSON.parse(data) : [];
+        storageAvailable = true;
+    }catch(e){
+        shortlist = [];
+        storageAvailable = false;
+    }
+
+    updateStorageNotice();
+    renderShortlist();
+}
+
+function persistShortlist(){
+    try{
+        localStorage.setItem(
+            "shortlist",
+            JSON.stringify(shortlist)
+        );
+        storageAvailable = true;
+    }catch(e){
+        storageAvailable = false;
+    }
+
+    updateStorageNotice();
+}
+
+function beginEdit(element, value, onSave){
+
+    const input = document.createElement("input");
+
+    input.type = "text";
+    input.maxLength = MAX_LEN;
+    input.value = value;
+
+    input.style.width = "100%";
+    input.style.font = "inherit";
+    input.style.background = "transparent";
+    input.style.border = "1px solid var(--ink)";
+    input.style.padding = "2px 4px";
+
+    element.replaceWith(input);
+
+    input.focus();
+    input.select();
+
+    function finish(){
+
+        let newName = input.value.trim();
+
+        if(newName === "")
+            newName = value;
+
+        if(shortlist.includes(newName) && newName !== value){
+            alert("That name is already saved.");
+            newName = value;
+        }
+
+        onSave(newName);
+    }
+
+    input.addEventListener("blur", finish);
+
+    input.addEventListener("keydown", e => {
+
+        if(e.key === "Enter")
+            finish();
+
+        if(e.key === "Escape")
+            onSave(value);
+
+    });
+
+}
+
+function renderFields(){
+  const container = document.getElementById('fieldsContainer');
+  if(currentBatch.length === 0){
+    container.innerHTML = '<div class="empty-state">No names filed yet. Press generate to begin.</div>';
+    return;
+  }
+  container.innerHTML = currentBatch.map((name, i) => {
+    const num = String(i+1).padStart(2,'0');
+    const isSaved = shortlist.includes(name);
+    return `
+      <div class="field">
+          <span class="field-num">FIELD ${num}</span>
+          <span class="field-name">${name}</span>
+          <span class="field-count">${name.length}/${MAX_LEN}</span>
+
+          <button class="icon-btn"
+                  data-action="edit"
+                  data-idx="${i}">✎</button>
+
+          <button class="icon-btn${isSaved ? ' saved':''}"
+                  data-action="star"
+                  data-idx="${i}">
+              ${isSaved ? '★' : '☆'}
+          </button>
+
+          <button class="icon-btn"
+                  data-action="reroll"
+                  data-idx="${i}">⟳</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderShortlist(){
+  const container = document.getElementById('shortlistContainer');
+  if(shortlist.length === 0){
+    container.innerHTML = '<div class="empty-state" style="padding:10px 0;">Nothing saved yet. Tap ☆ on a name to keep it here.</div>';
+    return;
+  }
+  container.innerHTML = shortlist.map((name, i) => `
+    <div class="short-item">
+
+        <span class="saved-name">${name}</span>
+
+        <span style="display:flex;align-items:center;gap:10px;">
+
+            <span class="short-meta">
+                ${name.length}/${MAX_LEN}
+            </span>
+
+            <button class="icon-btn"
+                    data-action="edit"
+                    data-idx="${i}">
+                ✎
+            </button>
+
+            <button class="remove-btn"
+                    data-action="remove"
+                    data-idx="${i}">
+                remove
+            </button>
+
+        </span>
+
+    </div>
+  `).join('');
+}
+
+document.getElementById('generateBtn').addEventListener('click', () => {
+  const mode = document.getElementById('patternSelect').value;
+  currentBatch = Array.from({length: 10}, () => generateOne(mode));
+  renderFields();
+});
+
+document.getElementById('fieldsContainer').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  const idx = parseInt(btn.dataset.idx, 10);
+  const action = btn.dataset.action;
+
+  if(action === "edit"){
+      const row = btn.closest(".field");
+
+      const label = row.querySelector(".field-name");
+
+      const original = currentBatch[idx];
+
+      beginEdit(label, original, newName => {
+
+          const oldName = currentBatch[idx];
+
+          currentBatch[idx] = newName;
+
+          const savedIndex = shortlist.indexOf(oldName);
+
+          if(savedIndex >= 0)
+              shortlist[savedIndex] = newName;
+
+          renderFields();
+          renderShortlist();
+          persistShortlist();
+
+      });
+
+      return;
+  }
+
+  if(action === 'reroll'){
+    const mode = document.getElementById('patternSelect').value;
+    currentBatch[idx] = generateOne(mode);
+    renderFields();
+  }
+  if(action === 'star'){
+    const name = currentBatch[idx];
+    if(shortlist.includes(name)){
+      shortlist = shortlist.filter(n => n !== name);
+    } else {
+      shortlist.push(name);
+    }
+    renderFields();
+    renderShortlist();
+    persistShortlist();
+  }
+});
+
+document.getElementById('shortlistContainer').addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if(btn.dataset.action === "edit"){
+      const row = btn.closest(".short-item");
+
+      const label = row.querySelector(".saved-name");
+
+      const original = shortlist[idx];
+
+      beginEdit(label, original, newName => {
+
+          const oldName = shortlist[idx];
+
+          shortlist[idx] = newName;
+
+          currentBatch = currentBatch.map(name => name === oldName ? newName : name);
+
+          renderFields();
+          renderShortlist();
+          persistShortlist();
+
+      });
+
+      return;
+  }
+  if(!btn || btn.dataset.action !== 'remove') return;
+  const idx = parseInt(btn.dataset.idx, 10);
+  shortlist.splice(idx, 1);
+  renderShortlist();
+  renderFields();
+  persistShortlist();
+});
+
+document.getElementById('dateField').textContent = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+loadShortlist();
+</script>
+
+</body>
+</html>
