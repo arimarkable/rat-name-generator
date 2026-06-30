@@ -325,19 +325,19 @@ function buildSingle(){
 
 function buildShort(){
   const patterns = [
-    () => titleCase(`${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`),
+    () => `${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`,
     () => {
       const t = rand(TITLES);
-      return titleCase(`${t} ${rand(WORDS["english-nouns"])}`);
+      return `${t} ${rand(WORDS["english-nouns"])}`;
     },
-    () => titleCase(`${rand(WORDS["english-nouns"])} ${rand(CONNECT)} ${rand(WORDS["english-nouns"])}`)
+    () => `${rand(WORDS["english-nouns"])} ${rand(CONNECT)} ${rand(WORDS["english-nouns"])}`
   ];
   return rand(patterns)();
 }
 
 function buildLong(){
   const t = rand(TITLES);
-  return titleCase(`${t} ${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`);
+  return titleCase`${t} ${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`;
 }
 
 function generateOne(mode){
@@ -351,7 +351,7 @@ function generateOne(mode){
   while(tries < 25){
     const name = rand(builders)();
     if(name.length <= MAX_LEN && isClean(name)){
-      return name;
+      return titleCase(name);
     }
     tries++;
   }
