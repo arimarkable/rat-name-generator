@@ -302,10 +302,6 @@ const BANNED = ["rat","mouse","mice","rodent","vermin","vole","gnaw","hamster","
 
 const TITLES = ["Sir","Dame","Lord","Lady","Captain","Doctor","Reverend","Professor","Baron","Countess","Saint","General","Madame","Duke of","Duchess of","His Excellency","The Honorable"];
 
-const ADJ = ["Wobbly","Catastrophic","Lukewarm","Inexplicable","Mandatory","Reluctant","Glorious","Soggy","Unforeseen","Perpetual","Drowsy","Volatile","Negligible","Triumphant","Questionable","Ominous","Damp","Excessive","Untimely","Unsolicited","Improbable","Vexing","Lavish","Crumbling","Feral","Wistful","Stale","Inflated","Overdue","Hasty","Belated","Suspicious","Radiant","Begrudging"];
-
-const NOUN = ["Thursday","Paperwork","Doom","Chaos","Leftovers","Nonsense","Static","Drizzle","Overtime","Stapler","Margarine","Eclipse","Avalanche","Pudding","Thunder","Loophole","Casserole","Velocity","Mildew","Echo","Sediment","Banister","Apocalypse","Lagoon","Mortgage","Sundial","Confetti","Embargo","Hailstorm","Vortex","Pancake","Mausoleum","Crumpet","Glitter","Cardigan","Thermostat","Horizon","Tundra","Carnival","Anchovy","Bagpipe","Compost"];
-
 const CONNECT = ["of","the","vs.","and","&","minus"];
 
 const PREFIX = ["Wob","Cata","Mando","Glor","Pip","Thun","Sploo","Quib","Zan","Fon","Crum","Sner","Plun","Grom","Wist","Blun","Driz","Hush","Clat","Smol","Vex","Brom"];
@@ -325,19 +321,19 @@ function buildSingle(){
 
 function buildShort(){
   const patterns = [
-    () => `${rand(ADJ)} ${rand(NOUN)}`,
+    () => `${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`,
     () => {
       const t = rand(TITLES);
-      return t.endsWith("of") ? `${t} ${rand(NOUN)}` : `${t} ${rand(NOUN)}`;
+      return `${t} ${rand(WORDS["english-nouns"])}`;
     },
-    () => `${rand(NOUN)} ${rand(CONNECT)} ${rand(NOUN)}`
+    () => `${rand(WORDS["english-nouns"])} ${rand(CONNECT)} ${rand(WORDS["english-nouns"])}`
   ];
   return rand(patterns)();
 }
 
 function buildLong(){
   const t = rand(TITLES);
-  return `${t} ${rand(ADJ)} ${rand(NOUN)}`;
+  return `${t} ${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`;
 }
 
 function generateOne(mode){
@@ -483,6 +479,35 @@ function renderFields(){
   }).join('');
 }
 
+function generateBatch(count, mode) {
+    const batch = [];
+    const used = new Set(shortlist);
+
+    while (batch.length < count) {
+        const name = generateOne(mode);
+
+        if (!used.has(name)) {
+            used.add(name);
+            batch.push(name);
+        }
+    }
+
+    return batch;
+}
+
+function rerollName(index, mode) {
+    let name;
+
+    do {
+        name = generateOne(mode);
+    } while (
+        currentBatch.includes(name) ||
+        shortlist.includes(name)
+    );
+
+    currentBatch[index] = name;
+}
+
 function renderShortlist(){
   const container = document.getElementById('shortlistContainer');
   if(shortlist.length === 0){
@@ -518,9 +543,41 @@ function renderShortlist(){
   `).join('');
 }
 
+async function loadWordList(name) {
+
+    const response = await fetch(`words/${name}.txt`);
+
+    if (!response.ok)
+        throw new Error(`Couldn't load words/${name}.txt`);
+
+    WORDS[name] = (await response.text())
+        .split(/\r?\n/)
+        .map(w => w.trim())
+        .filter(Boolean);
+}
+
+const WORDS = {};
+
+const generateBtn = document.getElementById("generateBtn");
+generateBtn.disabled = true;
+
+async function initialize() {
+
+    await Promise.all([
+        loadWordList("english-adjectives"),
+        loadWordList("english-nouns")
+    ]);
+
+    loadShortlist();
+
+    generateBtn.disabled = false;
+}
+
+initialize();
+
 document.getElementById('generateBtn').addEventListener('click', () => {
   const mode = document.getElementById('patternSelect').value;
-  currentBatch = Array.from({length: 10}, () => generateOne(mode));
+  currentBatch = generateBatch(10, mode);
   renderFields();
 });
 
@@ -559,7 +616,7 @@ document.getElementById('fieldsContainer').addEventListener('click', (e) => {
 
   if(action === 'reroll'){
     const mode = document.getElementById('patternSelect').value;
-    currentBatch[idx] = generateOne(mode);
+    rerollName(idx, mode);
     renderFields();
   }
   if(action === 'star'){
@@ -576,11 +633,16 @@ document.getElementById('fieldsContainer').addEventListener('click', (e) => {
 });
 
 document.getElementById('shortlistContainer').addEventListener('click', (e) => {
-  const btn = e.target.closest('button');
-  if(btn.dataset.action === "edit"){
+  const btn = e.target.closest("button");
+
+  if (!btn) return;
+  
+  if (btn.dataset.action === "edit") {
       const row = btn.closest(".short-item");
 
       const label = row.querySelector(".saved-name");
+
+      const idx = parseInt(btn.dataset.idx, 10);
 
       const original = shortlist[idx];
 
@@ -600,7 +662,7 @@ document.getElementById('shortlistContainer').addEventListener('click', (e) => {
 
       return;
   }
-  if(!btn || btn.dataset.action !== 'remove') return;
+  if(btn.dataset.action !== 'remove') return;
   const idx = parseInt(btn.dataset.idx, 10);
   shortlist.splice(idx, 1);
   renderShortlist();
@@ -610,7 +672,6 @@ document.getElementById('shortlistContainer').addEventListener('click', (e) => {
 
 document.getElementById('dateField').textContent = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
 
-loadShortlist();
 </script>
 
 </body>
