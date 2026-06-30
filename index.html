@@ -309,6 +309,10 @@ const SUFFIX = ["sworth","clysm","ification","atorium","ington","ble","ous","icl
 
 function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
+function titleCase(str) {
+    return str.replace(/\b\p{L}/gu, letter => letter.toUpperCase());
+}
+
 function isClean(name){
   const lower = name.toLowerCase();
   return !BANNED.some(b => lower.includes(b));
@@ -321,19 +325,19 @@ function buildSingle(){
 
 function buildShort(){
   const patterns = [
-    () => `${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`,
+    () => titleCase(`${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`),
     () => {
       const t = rand(TITLES);
-      return `${t} ${rand(WORDS["english-nouns"])}`;
+      return titleCase(`${t} ${rand(WORDS["english-nouns"])}`);
     },
-    () => `${rand(WORDS["english-nouns"])} ${rand(CONNECT)} ${rand(WORDS["english-nouns"])}`
+    () => titleCase(`${rand(WORDS["english-nouns"])} ${rand(CONNECT)} ${rand(WORDS["english-nouns"])}`)
   ];
   return rand(patterns)();
 }
 
 function buildLong(){
   const t = rand(TITLES);
-  return `${t} ${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`;
+  return titleCase(`${t} ${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`);
 }
 
 function generateOne(mode){
@@ -671,9 +675,6 @@ document.getElementById('shortlistContainer').addEventListener('click', (e) => {
 });
 
 document.getElementById('dateField').textContent = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-
-console.log(WORDS["english-adjectives"].length);
-console.log(WORDS["english-nouns"].length);
 
 </script>
 
