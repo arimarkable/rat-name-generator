@@ -337,7 +337,7 @@ function buildShort(){
 
 function buildLong(){
   const t = rand(TITLES);
-  return titleCase`${t} ${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`;
+  return `${t} ${rand(WORDS["english-adjectives"])} ${rand(WORDS["english-nouns"])}`;
 }
 
 function generateOne(mode){
